@@ -1,0 +1,66 @@
+---
+title: "`crosstalk` Formative Assessment"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(ggplot2)
+library(plotly)
+library(crosstalk)
+knitr::opts_chunk$set(echo = FALSE)
+diamonds <- ggplot2::diamonds[1:100,]
+```
+
+## Multiple Choice
+
+Consider the `diamonds` data set with columns: `r paste(names(diamonds), collapse = ", ")`. 
+
+Suppose we plan to make multiple plots which we want to interact based on the `clarity` variable (a categorical variable containing an eight-level clarity rating.) To do this, we will first define a `SharedData` object called `diamonds_ct`.
+
+```{r mult-choice}
+question("Which of the following is the correct way to create the SharedData object?",
+  answer("diamonds_ct <- SharedData$new(diamonds, group = 'clarity')"),
+  answer("diamonds_ct <- SharedData$new(diamonds)"),
+  answer("diamonds_ct <- SharedData$new(diamonds, key = ~clarity)", correct = TRUE),
+  answer("diamonds_ct <- SharedData$new(diamonds, key = 'clarity')"),
+  allow_retry = TRUE
+)
+```
+
+
+## Fill in the Blank
+
+Consider the `diamonds` data set with columns: `r paste(names(diamonds), collapse = ", ")`. 
+
+Fill in the blanks (`---`) in the following code in order to make two side-by-side scatterplots. 
+
+The left plot should show price (`price`) versus weight(`carat`), and the second should show price versus depth (`depth`). When any point is clicked, all data points for that same quality of cut (the categorical variable `cut`) should be highlighted. 
+
+All relevant packages have already been loaded.
+
+```{r blanks, exercise=TRUE}
+diamonds_ct <- SharedData$new(diamonds, key = ~---)
+
+gg_wgt <- ggplot(---) + aes(price, carat) + geom_point()
+gg_dep <- ggplot(---) + aes(price, depth) + geom_point()
+
+gg_wgt_ly <- ggplotly(gg_wgt)
+gg_dep_ly <- ggplotly(gg_dep)
+
+---(gg_wgt_ly, gg_dep_ly)
+```
+
+
+```{r blanks-solution}
+diamonds_ct <- SharedData$new(diamonds, key = ~cut)
+
+gg_wgt <- ggplot(diamonds_ct) + aes(price, carat) + geom_point()
+gg_dep <- ggplot(diamonds_ct) + aes(price, depth) + geom_point()
+
+gg_wgt_ly <- ggplotly(gg_wgt)
+gg_dep_ly <- ggplotly(gg_dep)
+
+bscols(gg_wgt_ly, gg_dep_ly)
+```
