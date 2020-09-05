@@ -1,2 +1,0 @@
-"0","trips <- readRDS(""data/trips_apr.rds"")"
-"0","stations <- readRDS(""data/stations.rds"")"

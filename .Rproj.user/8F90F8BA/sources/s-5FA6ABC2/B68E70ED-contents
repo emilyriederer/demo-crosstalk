@@ -5,61 +5,62 @@ runtime: shiny_prerendered
 ---
 
 ```{r setup, include=FALSE}
-library(learnr)
-library(palmerpenguins)
-library(ggplot2)
-library(plotly)
-library(crosstalk)
+require(learnr)
+require(ggplot2)
+require(plotly)
+require(crosstalk)
 knitr::opts_chunk$set(echo = FALSE)
+data(diamonds)
 ```
 
 ## Multiple Choice
 
-Consider a `penguins` data set with columns: `r paste(names(penguins), collapse = ", ")`. 
+Consider the `diamonds` data set with columns: `r paste(names(diamonds), collapse = ", ")`. 
 
-Suppose we plan to make multiple plots which we want to interact based on the `island` variable. 
+Suppose we plan to make multiple plots which we want to interact based on the `clarity` variable (a categorical variable containing an eight-level clarity rating.) To do this, we will first define a `SharedData` object called `diamonds_ct`.
 
 ```{r mult-choice}
 question("Which of the following is the correct way to create the SharedData object?",
-  answer("penguins_ct <- SharedData$new(penguins, group = 'island')"),
-  answer("penguins_ct <- SharedData$new(penguins)"),
-  answer("penguins_ct <- SharedData$new(penguins, key = ~island)", correct = TRUE),
-  answer("penguins_ct <- SharedData$new(penguins, key = 'island')")
+  answer("diamonds_ct <- SharedData$new(diamonds, group = 'clarity')"),
+  answer("diamonds_ct <- SharedData$new(diamonds)"),
+  answer("diamonds_ct <- SharedData$new(diamonds, key = ~clarity)", correct = TRUE),
+  answer("diamonds_ct <- SharedData$new(diamonds, key = 'clarity')"),
+  allow_retry = TRUE
 )
 ```
 
 
 ## Fill in the Blank
 
-Consider a `penguins` data set with columns: `r paste(names(penguins), collapse = ", ")`. 
+Consider the `diamonds` data set with columns: `r paste(names(diamonds), collapse = ", ")`. 
 
 Fill in the blanks (`---`) in the following code in order to make two side-by-side scatterplots. 
 
-The left plot should show bill length (`bill_length_mm`) versus bill depth (`bill_depth_mm`), and the second should show flipper length (`flipper_length_mm`) versus body mass (`body_mass_g`). When any point is clicked, all data points for that species should be highlighted. 
+The left plot should show price (`price`) versus weight(`carat`), and the second should show price versus depth (`depth`). When any point is clicked, all data points for that same quality of cut (the categorical variable `cut`) should be highlighted. 
 
 All relevant packages have already been loaded.
 
 ```{r blanks, exercise=TRUE}
-penguins_ct <- SharedData$new(penguins, key = ~---)
+diamonds_ct <- SharedData$new(diamonds, key = ~---)
 
-gg_bill <- ggplot(---) + aes(bill_length_mm, bill_depth_mm) + geom_point()
-gg_flip <- ggplot(---) + aes(flipper_length_mm, body_mass_g) + geom_point()
+gg_wgt <- ggplot(---) + aes(price, carat) + geom_point()
+gg_dep <- ggplot(---) + aes(price, depth) + geom_point()
 
-gg_bill_ly <- ggplotly(gg_bill)
-gg_flip_ly <- ggplotly(gg_flip)
+gg_wgt_ly <- ggplotly(gg_wgt)
+gg_dep_ly <- ggplotly(gg_dep)
 
----(gg_bill_ly, gg_flip_ly)
+---(gg_wgt_ly, gg_dep_ly)
 ```
 
 
 ```{r blanks-solution}
-penguins_ct <- SharedData$new(penguins, key = ~species)
+diamonds_ct <- SharedData$new(diamonds, key = ~cut)
 
-gg_bill <- ggplot(penguins_ct) + aes(bill_length_mm, bill_depth_mm) + geom_point()
-gg_flip <- ggplot(penguins_ct) + aes(flipper_length_mm, body_mass_g) + geom_point()
+gg_wgt <- ggplot(diamonds_ct) + aes(price, carat) + geom_point()
+gg_dep <- ggplot(diamonds_ct) + aes(price, depth) + geom_point()
 
-gg_bill_ly <- ggplotly(gg_bill)
-gg_flip_ly <- ggplotly(gg_flip)
+gg_wgt_ly <- ggplotly(gg_wgt)
+gg_dep_ly <- ggplotly(gg_dep)
 
-bscols(gg_bill_ly, gg_flip_ly)
+bscols(gg_wgt_ly, gg_dep_ly)
 ```
