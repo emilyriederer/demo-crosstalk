@@ -5,10 +5,10 @@ runtime: shiny_prerendered
 ---
 
 ```{r setup, include=FALSE}
-library(learnr)
-library(ggplot2)
-library(plotly)
-library(crosstalk)
+require(learnr)
+require(ggplot2)
+require(plotly)
+require(crosstalk)
 knitr::opts_chunk$set(echo = FALSE)
 diamonds <- ggplot2::diamonds[1:100,]
 ```
@@ -38,18 +38,18 @@ Fill in the blanks (`---`) in the following code in order to make two side-by-si
 
 The left plot should show price (`price`) versus weight(`carat`), and the second should show price versus depth (`depth`). When any point is clicked, all data points for that same quality of cut (the categorical variable `cut`) should be highlighted. 
 
-All relevant packages have already been loaded.
+All relevant packages have already been loaded. Uncomment the lines before submitting.
 
 ```{r blanks, exercise=TRUE}
-diamonds_ct <- SharedData$new(diamonds, key = ~---)
+# diamonds_ct <- SharedData$new(diamonds, key = ~---)
 
-gg_wgt <- ggplot(---) + aes(price, carat) + geom_point()
-gg_dep <- ggplot(---) + aes(price, depth) + geom_point()
+# gg_wgt <- ggplot(---) + aes(price, carat) + geom_point()
+# gg_dep <- ggplot(---) + aes(price, depth) + geom_point()
 
 gg_wgt_ly <- ggplotly(gg_wgt)
 gg_dep_ly <- ggplotly(gg_dep)
 
----(gg_wgt_ly, gg_dep_ly)
+# ---(gg_wgt_ly, gg_dep_ly)
 ```
 
 
