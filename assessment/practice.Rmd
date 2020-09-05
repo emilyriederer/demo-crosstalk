@@ -10,6 +10,7 @@ require(ggplot2)
 require(plotly)
 require(crosstalk)
 knitr::opts_chunk$set(echo = FALSE)
+tutorial_options(exercise.startover = TRUE)
 diamonds <- ggplot2::diamonds[1:100,]
 ```
 
