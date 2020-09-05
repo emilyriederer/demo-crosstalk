@@ -1,0 +1,48 @@
+library(RSocrata)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+
+# pull data ----
+trips <- read.socrata("https://data.cityofchicago.org/resource/5neh-572f.json")
+trips <- trips[trips$date > "2018-12-31", ]
+trips$rides <- as.numeric(trips$rides)
+
+# wrangle summary stats ----
+trips_yoy <-
+  trips %>%
+  mutate(
+    year = year(date),
+    mnth = month(date),
+    wday = wday(date, week_start = 1)
+  ) %>%
+  filter(year >= 2019, mnth == 4) %>%
+  group_by(stationname, year, wpart = ifelse(wday < 6, "wday", "wend")) %>%
+  summarize(rides = sum(rides)) %>%
+  pivot_wider(
+    names_from = c(year, wpart), 
+    names_prefix = "year_", 
+    values_from = rides
+  ) %>%
+  mutate(
+    year_2019 = year_2019_wday + year_2019_wend,
+    year_2020 = year_2020_wday + year_2020_wend,
+    pct_change = (year_2020 - year_2019) / year_2019,
+    prop_wend_2019 = year_2019_wend / year_2019 ,
+    prop_wend_2020 = year_2020_wend / year_2020
+  )
+
+# take a smaller sample ----
+set.seed(925)
+
+trips_yoy_sub <-
+  trips_yoy %>%
+  group_by(round(pct_change, 1)) %>%
+  sample_n(4) %>%
+  ungroup()
+
+trips_sub <- filter(trips, stationname %in% trips_yoy_sub$stationname)
+
+saveRDS(trips_sub, "data/trips_ts.rds")
+saveRDS(trips_yoy_sub, "data/trips_apr.rds")
+

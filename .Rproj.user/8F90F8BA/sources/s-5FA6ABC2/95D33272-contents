@@ -1,0 +1,84 @@
+# load packages ----
+library(RSocrata)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(lubridate)
+library(tsibble)
+library(feasts)
+
+# read & wrangle turnstile data ----
+stations <- read.socrata("https://data.cityofchicago.org/resource/8pix-ypme.json")
+trips    <- read.socrata("https://data.cityofchicago.org/resource/5neh-572f.json")
+
+# missing days ----
+missing <-
+  trips %>%
+  complete(stationname, date) %>%
+  filter(is.na(rides))
+
+missing_summ <-
+  missing %>%
+  filter(date >= '2015-01-01', date <= '2018-12-31') %>%
+  group_by(stationname) %>%
+  summarize(
+    n = n(),
+    min_date = min(date),
+    max_date = max(date),
+    dates = list(date)
+  ) %>%
+  arrange(desc(n))
+
+full_data <-
+  trips %>%
+  mutate(
+    date = as_date(date),
+    rides = as.numeric(rides)
+    ) %>%
+  filter(date >= '2015-01-01', date <= '2018-12-31') %>%
+  filter(!stationname %in% missing_summ$stationname)
+
+# tsibble ----
+ts <-  tsibble(full_data, key = stationname, index = date)
+feats <- features(ts, rides, features = feature_set(tags = "stl"))
+feats %>%
+  ggplot(aes(x = trend_strength, y = seasonal_strength_week, colour = stationname)) +
+  geom_point() +
+  coord_equal() +
+  lims(x = c(0,1), y = c(0,1)) +
+  guides(col = FALSE)
+
+
+
+# forecasting
+ts_clarklake <- 
+  filter(trips, stationname == 'Clark/Lake', date >= '2017-01-01', date <= "2019-12-31") %>%
+  mutate(
+    rides = as.numeric(rides),
+    date = as.Date(date)
+  ) %>%
+  tsibble(key = stationname, index = date)
+
+ts_clarklake %>%
+  mutate(
+    diff_week = difference(rides, 7),
+    diff_week_day = difference(difference(rides, 7), 1)
+    ) %>%
+  ggplot(aes(date, diff_week)) + geom_line()
+
+ts_clarklake %>%
+  mutate(
+    diff_week = difference(rides, 7),
+    diff_week_day = difference(difference(rides, 7), 1)
+  ) %>%
+  features(diff_week, unitroot_kpss)
+
+ts_clarklake %>%
+  gg_tsdisplay(difference(rides, 7), plot_type='partial')
+
+fit <- ts_clarklake %>%
+  mutate(diff_week = difference(rides, 7)) %>%
+  model(arima = ARIMA(diff_week ~ 0 + pdq(0,1,1) + PDQ(0, 1, 1)))
+gg_tsresiduals(fit)
+report(fit)
+fit %>% forecast() %>% autoplot(ts_clarklake)

@@ -1,0 +1,6 @@
+"0","# create final output ----"
+"0","bscols("
+"0","  div(h3(""Chicago CTA Trips - April 2019 vs 2020"")),"
+"0","  gg_ly, lf, "
+"0","  dt, "
+"0","  widths = c(12, 6, 6, 12))"

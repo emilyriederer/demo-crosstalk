@@ -1,0 +1,6 @@
+"0","library(learnr)"
+"0","library(palmerpenguins)"
+"0","library(ggplot2)"
+"0","library(plotly)"
+"0","library(crosstalk)"
+"0","knitr::opts_chunk$set(echo = FALSE)"

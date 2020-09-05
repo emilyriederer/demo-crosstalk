@@ -1,0 +1,132 @@
+---
+title: "Crosstalk Practice"
+output: 
+  html_document:
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r pkg-load}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(DT)
+library(leaflet)
+library(crosstalk)
+```
+
+```{r data-load}
+trips <- readRDS("../data/trips_apr.rds")
+stations <- readRDS("../data/stations.rds")
+```
+
+## Inspect the Datsets
+
+To practice `crosstalk`, we will use two data sets. 
+
+The `trips` data set contains one row per (a sample of) subway station. It includes many variables that summarize the number of rides in April 2019 and April 2020. 
+
+The `stations` dataset contains one row per (a sample of) subway station. It contains metadata about each station, such as its longitude and latitude.
+
+```{r}
+head(trips)
+head(stations)
+```
+
+## Warm-Up
+
+To warm-up, we can look at a static visualization of the `trips` dataset.
+
+```{r}
+gg_trips <- 
+  ggplot(data = trips) +
+  aes(
+    x = year_2019,
+    y = year_2020
+  ) +
+  geom_point()
+
+gg_trips
+```
+
+Using `plotly`, we can make this plot interactive with features such as a tooltip and zooming. 
+
+```{r}
+ggplotly(gg_trips)
+```
+
+## Interactive Viz with one `SharedData` object
+
+Now, let's make two plots based on the `trips` data set. We will link them by `station_id` so that we can understand more elements of a single stations behavior at once. 
+
+```{r}
+# make SharedData object ----
+trips_ct <- 
+
+# make ggplots using SharedData object ----
+gg_year <-
+  ggplot(data = ---) +
+  aes(x = year_2019, y = pct_change, col = pct_change) +
+  geom_point()
+  
+gg_week <- 
+  ggplot(data = ---) +
+  aes(x = prop_wend_2019, y = prop_wend_2020, col = pct_change) +
+  geom_point()
+  
+# convert ggplots to ggplotly ----
+gg_year_ly <- 
+gg_week_ly <- 
+
+# compose output ----
+bscols(gg_year_ly, gg_week_ly)
+```
+
+## Interactive Viz with different widgets 
+
+We can combine different types of widgets in the same way that we combine two plots. Now, let's try this by changing out second plot to instead be an interactive table.
+
+```{r}
+# make SharedData object ----
+trips_ct <- SharedData$new(trips, key = ~station_id)
+
+# make ggplots using SharedData object ----
+gg_year <-
+  ggplot(trips_ct) +
+  aes(x = year_2019, y = pct_change, col = pct_change) +
+  geom_point()
+
+# make htmlwidgets ----
+gg_year_ly <- ggplotly(gg_year)
+dt_stations <- 
+
+# compose output ----
+bscols(gg_year_ly, dt_stations)
+```
+
+## Interactive Viz with two `SharedData` objects
+
+If we need to use data from multiple data sets, we can link them with the `group` argument when creating the `SharedData` objects. We will use this trick to turn our table into a map, which requires the `stations` data set for the latitude and longitude.
+
+```{r}
+# make SharedData object ----
+trips_ct <- 
+stations_ct <- 
+
+# make ggplots with SharedData object ----
+gg_year <-
+  ggplot(trips_ct) +
+  aes(x = year_2019, y = pct_change, col = pct_change) +
+  geom_point()
+  
+# make htmlwidgets ----
+gg_year_ly <- ggplotly(gg_year)
+lf_station <- leaflet(---) %>% addTiles() %>% addMarkers()
+
+# compose output ----
+bscols(gg_year_ly, lf_station)
+```
+

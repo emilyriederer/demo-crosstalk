@@ -1,0 +1,80 @@
+---
+title: "Chicago CTA Trips - April 2019 vs 2020"
+output: 
+  html_document:
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, error = FALSE, warning = FALSE)
+```
+
+```{r pkg-load}
+library(dplyr)
+library(leaflet)
+library(DT)
+library(ggplot2)
+library(plotly)
+library(crosstalk)
+```
+
+```{r data-load}
+trips <- readRDS("../data/trips_apr.rds")
+stations <- readRDS("../data/stations.rds")
+```
+
+
+```{r make-components}
+# create SharedData ----
+trips_ct <- 
+  trips %>%
+  select(station_name, station_id, year_2019, year_2020, pct_change, prop_wend_2019) %>%
+  mutate_at(vars(pct_change, prop_wend_2019), round, 2) %>%
+  SharedData$new(key = ~station_id, group = "loc")
+stations_ct <- SharedData$new(stations, key = ~station_id, group = "loc")
+
+# create individual widgets ----
+
+# map
+lf <- leaflet(stations_ct) %>% addTiles() %>% addMarkers()
+
+
+# table
+dt <- datatable(trips_ct,
+                fillContainer = TRUE,
+                rownames = FALSE,
+                colnames = c("Station", "ID",
+                             "2019 Rides", "2020 Rides", 
+                             "% Change", "% Weekend 2019"))
+
+# plot
+gg <- ggplot(trips_ct) +
+    aes(
+      x = prop_wend_2019, 
+      y = pct_change,
+      col = pct_change,
+      name = station_name) +
+    geom_point() +
+    guides(col = FALSE) +
+  labs(
+    x = "% Apr 2019 Trips on Weekend",
+    y = "% Change Apr 2020 vs 2019"
+  ) +
+  scale_x_continuous(labels = scales::percent) +
+  scale_y_continuous(labels = scales::percent)
+gg_ly <- 
+  ggplotly(gg, tooltip = "name") %>%
+  highlight(on = "plotly_selected",
+            off = "plotly_doubleclick")
+```
+
+
+```{r}
+# create final output ----
+bscols(
+  gg_ly, lf, 
+  dt, 
+  widths = c(6, 6, 12))
+```
+
+

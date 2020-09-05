@@ -1,0 +1,83 @@
+# load packages ----
+library(RSocrata)
+library(tidycensus)
+library(dplyr)
+library(mapview)
+library(leaflet)
+library(sp)
+
+# read & wrangle turnstile data ----
+stations <- read.socrata("https://data.cityofchicago.org/resource/8pix-ypme.json")
+trips    <- read.socrata("https://data.cityofchicago.org/resource/5neh-572f.json")
+
+pct_change_trips <-
+trips %>%
+  filter(
+    (date >= '2020-03-24' & date <= '2020-03-30') | 
+    (date >= '2019-03-24' & date <= '2019-03-30')
+    ) %>%
+  left_join(
+    select(stations, station_id = map_id, lat = location.latitude, lon = location.longitude),
+    by = "station_id"
+  ) %>%
+  mutate(year = substring(date, 1, 4)) %>%
+  mutate_at(vars(rides, lat, lon), as.numeric) %>%
+  group_by(stationname) %>%
+  summarize(
+    lat = max(lat),
+    lon = max(lon),
+    pct_chg = round(sum(ifelse(year == "2020", rides, 0)) * 100 / sum(ifelse(year == "2019", rides, 0)))
+  )
+
+# convert to spatial data object ----
+coordinates(pct_change_trips) <- c("lon", "lat")
+proj4string(pct_change_trips) <- CRS("+init=epsg:4326")
+
+# read & wrangle income data + shapefile ----
+median_income <- get_acs(geography = "tract", 
+                            variables = c(medincome = "B19013_001"), 
+                            state = "IL", 
+                            count = "Cook",
+                            year = 2018,
+                            geometry = TRUE) %>% 
+  filter(!is.na(estimate))
+
+# plot output ----
+
+# palettes
+pal_blues <- colorRampPalette(c('lightgrey', 'midnightblue'))
+pal_reds  <- colorRampPalette(c('lightyellow', 'darkred'))
+
+# cutpoints
+cut_inc <- round(quantile(median_income$estimate, seq(0,1,0.2)))
+cut_pct <- seq(0, max(pct_change_trips$pct_chg), 20)
+
+m <- 
+  mapview(median_income, 
+          zcol = "estimate", at = cut_inc, col.regions = pal_blues, 
+          layer.name = 'ACS 2018 Median Income', lwd = 0) + 
+  mapview(pct_change_trips, 
+          zcol = "pct_chg", at = cut_pct, col.regions = pal_reds, alpha.regions = 1,
+          layer.name = '% Same-Week 2019 Trips')
+m
+
+# time series clustering ----
+library(tsibble)
+library(feasts)
+library(ggplot2)
+
+trips19 <- filter(trips, date >= '2019-01-01', date <= '2019-12-31')
+features <- 
+trips19 %>%
+  mutate(rides = as.numeric(rides)) %>%
+  as_tsibble(key = c(stationname, station_id), index = date) %>%
+  features(rides, list(~feat_stl(., .period = 7))) %>%
+  filter_all(all_vars(!is.na(.)))
+pcs <- features %>%
+  select(-stationname, -station_id) %>%
+  prcomp(scale = TRUE) %>%
+  broom::augment(features)
+pcs %>%
+  ggplot(aes(x=.fittedPC1, y=.fittedPC2)) +
+  geom_point() + theme(aspect.ratio=1)
+hdrcde::hdrscatterplot(pcs$.fittedPC1, pcs$.fittedPC2, noutliers=5)

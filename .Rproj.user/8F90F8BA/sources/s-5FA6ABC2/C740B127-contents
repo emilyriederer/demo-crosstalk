@@ -1,0 +1,190 @@
+---
+title: "Untitled"
+output: 
+  html_document:
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r pkg-load}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(DT)
+library(crosstalk)
+```
+
+```{r data-load}
+trips_ts <- readRDS("data/trips_ts.rds")
+trips_apr <- readRDS("data/trips_apr.rds")
+stations <- readRDS("data/stations.rds")
+```
+
+## Inspect the Datsets
+
+```{r}
+summary(trips_ts)
+summary(trips_apr)
+```
+
+## Static Visualizations
+
+```{r}
+gg_trend <-
+  ggplot(trips_ts) +
+  aes(
+    x = date, 
+    y = rides, 
+    group = stationname) +
+  geom_line()
+
+gg_apr <- 
+  ggplot(trips_apr) + 
+  aes(
+    x = year_2019, 
+    y = pct_change, 
+    col = pct_change) + 
+  geom_point()
+```
+
+## Dynamic Viz with `plotly`
+
+```{r}
+ggplotly(gg_trend)
+ggplotly(gg_apr)
+```
+
+## Interactive Viz with one `SharedData` object
+
+```{r}
+# make SharedData object
+trips_apr_ct <- SharedData$new(trips_apr, key = ~stationname)
+
+# make ggplots with SharedData object
+gg_year <- 
+  ggplot(trips_apr_ct) +
+  aes(x = year_2019, y = pct_change, col = pct_change, name = stationname) +
+  geom_point()
+  
+gg_week <- 
+  ggplot(trips_apr_ct) +
+  aes(x = prop_wend_2019, y = prop_wend_2020, col = pct_change) +
+  geom_point()
+  
+# convert ggplots to ggplotly
+gg_year_ly <- ggplotly(gg_year)
+gg_week_ly <- ggplotly(gg_week)
+
+# compose output
+bscols(gg_year_ly, gg_week_ly)
+```
+
+## Interactive Viz with different widgets 
+
+```{r}
+# make SharedData object
+trips_apr_ct <- SharedData$new(trips_apr, key = ~stationname)
+
+# make ggplots with SharedData object
+gg_year <- 
+  ggplot(trips_apr_ct) +
+  aes(x = year_2019, y = pct_change, col = pct_change, name = stationname) +
+  geom_point()
+  
+# convert ggplots to ggplotly
+gg_year_ly <- ggplotly(gg_year)
+dt_trend <- datatable(trips_apr_ct)
+
+# compose output
+bscols(gg_year_ly, dt_trend)
+```
+
+## Interactive Viz with two `SharedData` objects
+
+```{r}
+# make SharedData object
+trips_apr_ct <- SharedData$new(trips_apr, key = ~stationname, group = "group")
+trips_ts_ct <- SharedData$new(trips_ts, key = ~stationname, group = "group")
+
+# make ggplots with SharedData object
+gg_year <- 
+  ggplot(trips_apr_ct) +
+  aes(x = year_2019, y = pct_change, col = pct_change, name = stationname) +
+  geom_point()
+  
+gg_trend <- 
+  ggplot(trips_ts_ct) +
+  aes(x = date, y = rides) +
+  geom_line()
+  
+# convert ggplots to ggplotly
+gg_year_ly <- ggplotly(gg_year)
+gg_trend_ly <- ggplotly(gg_trend)
+
+# compose output
+bscols(gg_year_ly, gg_trend_ly)
+```
+
+## Complete Example
+
+```{r}
+library(dplyr)
+library(leaflet)
+library(DT)
+library(ggplot2)
+library(plotly)
+library(crosstalk)
+library(htmltools)
+
+# create SharedData ----
+trips_apr_ct <- 
+  trips_apr %>%
+  select(stationname, lon, lat, 
+         year_2019, year_2020, pct_change, prop_wend_2019) %>%
+  mutate_at(
+    vars(lon, lat, pct_change, prop_wend_2019),
+    round, 2
+  ) %>%
+  SharedData$new(key = ~stationname)
+
+# create individual widgets ----
+lf <- leaflet(trips_apr_ct) %>% addTiles() %>% addMarkers()
+
+dt <- datatable(trips_apr_ct,
+                fillContainer = TRUE,
+                rownames = FALSE,
+                colnames = c("Station", "Lon", "Lat",
+                             "2019 Rides", "2020 Rides", 
+                             "% Change", "% Weekend 2019"))
+
+gg <- ggplot(trips_apr_ct) +
+    aes(
+      x = prop_wend_2019, 
+      y = pct_change,
+      col = pct_change,
+      name = stationname) +
+    geom_point() +
+    guides(col = FALSE) +
+  labs(
+    x = "% Apr 2019 Trips on Weekend",
+    y = "% Change Apr 2020 vs 2019"
+  ) +
+  scale_x_continuous(labels = scales::percent) +
+  scale_y_continuous(labels = scales::percent)
+gg_ly <- 
+  ggplotly(gg, tooltip = "name") %>%
+  highlight(on = "plotly_selected",
+            off = "plotly_doubleclick")
+
+# create final output ----
+bscols(
+  div(h3("Chicago CTA Trips - April 2019 vs 2020")),
+  gg_ly, lf, 
+  dt, 
+  widths = c(12, 6, 6, 12))
+```
+
+

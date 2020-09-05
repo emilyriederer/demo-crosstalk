@@ -1,0 +1,56 @@
+---
+title: "Crosstalk Formative Assessment"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(parsons)
+library(palmerpenguins)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Assessment 1
+
+Consider a `penguins` data set with columns `r paste(names(penguins), collapse = ", ")`. 
+
+Arrange the following code blocks in order to make two side-by-side scatterplots. The left plot should show bill length versus bill depth, and the second should show flipper_length versus flipper_depth. When any point is clicked, all data points for that species should be highlighted. 
+
+```{r parsons}
+question_parsons(
+ initial = c(
+  "data_ct <- SharedData$new(penguins, key = ~species)",
+  "gg1 <- ggplot(data_ct, aes(bill_length_mm, bill_depth_mm, col = species)) + geom_point()",
+  "gg2 <- ggplot(data_ct, aes(bill_length_mm, flipper_length_mm, col = species)) + geom_point()",
+  "bscols(ggplotly(gg1), ggplotly(gg2))"
+ ), 
+ answer(c(
+  "data_ct <- SharedData$new(penguins, key = ~species)",
+  "gg1 <- ggplot(data_ct, aes(bill_length_mm, bill_depth_mm, col = species)) + geom_point()",
+  "gg2 <- ggplot(data_ct, aes(bill_length_mm, flipper_length_mm, col = species)) + geom_point()",
+  "bscols(ggplotly(gg1), ggplotly(gg2))"
+ ),,
+ correct = TRUE),
+ allow_retry = TRUE,
+ randow_answer_order = TRUE
+)
+```
+
+## Assessment 2
+
+Multiple choice mistakes:
+
+1. Wrangle before casting
+2. Pick correct `key`
+3. Need to specify `group`
+4, 
+
+```{r add-function, exercise=TRUE, exercise.lines = 5}
+question("What number is the letter A in the English alphabet?",
+  answer("8"),
+  answer("14"),
+  answer("1", correct = TRUE),
+  answer("23")
+)
+```
