@@ -11,5 +11,7 @@ Contents include:
   + `lecture-complete.Rmd`: A master version of the notebook to use in lesson with all code filled in
   + `lecture-partial.Rmd`: A version of lesson material with code chunks deleted for live coding
 - `assessment`: `learnr` tutorial with two formative assessments
+  + As of writing, this assessment is also available on [shinyapps.io](https://emilyriederer.shinyapps.io/crosstalk-assessment/)
+  + If it is later removed, you may run it locally in RStudio from the `.Rmd` file in this repo
 
 Related Google Slides are available [here](https://docs.google.com/presentation/d/1yH_T5erAkK7EVP3SlaLW9sNHN7r94UOZHKkVxOSi9x0/edit#slide=id.g95f687e584_0_1620).
