@@ -1,0 +1,12 @@
+name: tutorial-crosstalk-cta
+title: tutorial-crosstalk-cta
+username:
+account: emilyriederer
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2797543
+bundleId: 3623031
+url: https://emilyriederer.shinyapps.io/tutorial-crosstalk-cta/
+when: 1599955065.76861
+asMultiple: FALSE
+asStatic: FALSE
