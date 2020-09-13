@@ -22,5 +22,5 @@ Related Google Slides are available [here](https://docs.google.com/presentation/
 For self-exploration:
 
 - `tutorial`:
-  + `tutorial-learnr.Rmd`: `learnr` tutorial that can be run locally or viewed on [shinyapps.io]() (hosted version may be removed in the future)
+  + `tutorial-learnr.Rmd`: `learnr` tutorial that can be run locally or viewed on [shinyapps.io](https://emilyriederer.shinyapps.io/tutorial-crosstalk-cta/) (hosted version may be removed in the future)
   + `tutorial-rmd.{Rmd/html}`: static tutorial which can be read [here](https://emilyriederer.github.io/demo-crosstalk/tutorial/tutorial-rmd.html)
