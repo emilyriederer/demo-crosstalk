@@ -45,7 +45,8 @@ library(crosstalk)
 
 # create SharedData ----
 trips_ct <- SharedData$new(trips, key = ~station_id, group = "loc")
-trips_sub_ct <- SharedData$new(trips[,c("station_name", "station_id", "pct_change")], key = ~station_id, group = "loc")
+trips_sub_ct <- SharedData$new(trips[,c("station_name", "station_id", "pct_change")], 
+                               key = ~station_id, group = "loc")
 stations_ct <- SharedData$new(stations, key = ~station_id, group = "loc")
 
 # create individual widgets ----
