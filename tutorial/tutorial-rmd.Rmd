@@ -108,7 +108,7 @@ In contrast, `SharedData` allows you to create multiple downstream objects (like
 knitr::include_graphics("images/01-info-flow.png")
 ```
 
-Conceptually, this words because `ggplotly` and other JavaScript-based `htmlwidgets` can sense inputs such as button clicks and "react". This information can be sent back to the `SharedData` object and cause other objects that were derived from the `SharedData` object to react. In the example below, `plot 2` sends information back to `plot 1` via the `SharedData` object.
+Conceptually, this works because `ggplotly` and other JavaScript-based `htmlwidgets` can sense inputs such as button clicks and "react". This information can be sent back to the `SharedData` object and cause other objects that were derived from the `SharedData` object to react. In the example below, `plot 2` sends information back to `plot 1` via the `SharedData` object.
 
 ```{r}
 knitr::include_graphics("images/02-info-flow-ex.png")
