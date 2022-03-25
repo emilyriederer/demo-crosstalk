@@ -151,7 +151,7 @@ Notice that `station_id` is preceded by a tilde (`~`) because key expects a *for
 
 ## Using `SharedData` in plots
 
-We can pass `SharedData` to `ggplot2::ggplot()` just like a normal dataframe.
+If we have run `library(plotly)` first, we can pass `SharedData` to `ggplot2::ggplot()` just like a normal dataframe. (Loading `plotly` will give `ggplot2::ggplot` the ability to use `SharedData` objects.)
 
 ```{r}
 gg <- ggplot(trips_ct, aes(year_2019, pct_change)) + geom_point()
